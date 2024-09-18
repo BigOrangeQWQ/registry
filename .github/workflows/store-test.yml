@@ -49,6 +49,7 @@ jobs:
           mkdir -p plugin_test/store
           curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/results.json -o plugin_test/store/previous_results.json
           curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/plugins.json -o plugin_test/store/previous_plugins.json
+          curl -sSL https://raw.githubusercontent.com/nonebot/registry/results/plugin_configs.json -o plugin_test/store/plugin_configs.json
           curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/adapters.json -o plugin_test/store/adapters.json
           curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/bots.json -o plugin_test/store/bots.json
           curl -sSL https://raw.githubusercontent.com/nonebot/nonebot2/master/assets/drivers.json -o plugin_test/store/drivers.json
@@ -80,6 +81,7 @@ jobs:
             ${{ github.workspace }}/plugin_test/bots.json
             ${{ github.workspace }}/plugin_test/drivers.json
             ${{ github.workspace }}/plugin_test/plugins.json
+            ${{ github.workspace }}/plugin_test/plugin_configs.json
 
   upload_results:
     runs-on: ubuntu-latest
