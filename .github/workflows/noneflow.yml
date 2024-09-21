@@ -1,0 +1,61 @@
+name: NoneFlow
+
+on:
+  issues:
+    types: [opened, reopened, edited]
+  pull_request_target:
+    types: [closed]
+  issue_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number || github.run_id }}
+  # cancel-in-progress: true
+
+jobs:
+  publish_bot:
+    runs-on: ubuntu-latest
+    name: nonebot2 publish bot
+    if: |
+      ${{
+        !(
+          github.event.pull_request &&
+          (
+            github.event.pull_request.head.repo.fork ||
+            !(
+              contains(github.event.pull_request.labels.*.name, 'Plugin') ||
+              contains(github.event.pull_request.labels.*.name, 'Adapter') ||
+              contains(github.event.pull_request.labels.*.name, 'Bot')
+            )
+          )
+        )
+      }}
+    steps:
+      - name: Print needs
+        env:
+          GITHUB_NEEDS: ${{ toJson(needs) }}
+        run: echo "$GITHUB_NEEDS"
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Cache pre-commit hooks
+        uses: actions/cache@v3
+        with:
+          path: .cache/.pre-commit
+          key: noneflow-pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: NoneBot2 Publish Bot
+        uses: docker://ghcr.io/bigorangeqwq/noneflow:main
+        env:
+          INPUT_CONFIG: '{
+              "base": "result",
+              "plugin_path": "plugins.json",
+              "bot_path": "bots.json",
+              "adapter_path": "adapters.json",
+              "registry_repository": "bigorangeqwq/registry"
+            }'
+          APP_ID: ${{ secrets.APP_ID }}
+          PRIVATE_KEY: ${{ secrets.APP_KEY }}
+          PRE_COMMIT_HOME: /github/workspace/.cache/.pre-commit
+      - name: Change permission
+        run: sudo chown -R $(whoami):$(id -ng) .cache/.pre-commit
